@@ -1,0 +1,31 @@
+{
+  "name": "fox-env",
+  "version": "1.0.0-stable",
+  "description": "Fox Environment Switcher",
+  "main": "index.js",
+  "bin": {
+    "fox-env": "./index.js"
+  },
+  "scripts": {},
+  "engines": {
+    "node": ">=18.19.1"
+  },
+  "keywords": [
+    "fox-boilerplate",
+    "fox-env"
+  ],
+  "author": {
+    "name": "Yhojann Aguilera",
+    "email": "yhojann.aguilera@gmail.com",
+    "url": "https://yhojann.cl/"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fox-boilerplate/fox-env/issues"
+  },
+  "homepage": "https://github.com/fox-boilerplate/fox-env#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fox-boilerplate/fox-env.git"
+  }
+}
