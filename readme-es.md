@@ -50,18 +50,18 @@ Examples:
   7. User save current environemn changes       : fox-user save
 
 Where are the backups kept?
-  /home/yhojann/.config/fox-user
+  /home/user/.config/fox-user
 
 What files and directories does it save?
-  - /home/yhojann/.ssh
-  - /home/yhojann/.bash_history
-  - /home/yhojann/.profile
-  - /home/yhojann/.bashrc
-  - /home/yhojann/.bash_logout
-  - /home/yhojann/.bash_profile
-  - /home/yhojann/.gitconfig
+  - /home/user/.ssh
+  - /home/user/.bash_history
+  - /home/user/.profile
+  - /home/user/.bashrc
+  - /home/user/.bash_logout
+  - /home/user/.bash_profile
+  - /home/user/.gitconfig
 
 Current environment used:
   - Name: personal
-  - Backup path: /home/yhojann/.config/fox-env/personal
+  - Backup path: /home/user/.config/fox-env/personal
 ```
