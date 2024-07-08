@@ -14,7 +14,7 @@ The supported technologies are:
 Installation:
 
 ```
-npm install fox-env
+sudo npm install -g fox-env
 ```
 
 Use:
