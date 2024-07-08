@@ -6,6 +6,8 @@ const fs = require('fs');
 const os = require('os');
 const pk = require('./package.json');
 
+class ExpectedError extends Error { }
+
 class FoxEnv {
 
     constructor() {
@@ -15,19 +17,21 @@ class FoxEnv {
 
         // Local settings
         this.settings = {
-            currentEnv: null
-        };
 
-        // Files and folders to save
-        this.plan = [
-            { path: `${os.homedir()}/.ssh`, cleanable: true },
-            { path: `${os.homedir()}/.bash_history`, cleanable: true },
-            { path: `${os.homedir()}/.profile`, cleanable: false },
-            { path: `${os.homedir()}/.bashrc`, cleanable: false },
-            { path: `${os.homedir()}/.bash_logout`, cleanable: false },
-            { path: `${os.homedir()}/.bash_profile`, cleanable: false },
-            { path: `${os.homedir()}/.gitconfig`, cleanable: true },
-        ];
+            // Current environment name
+            currentEnv: null,
+
+            // Files and folders to save
+            save: [
+                { path: `${os.homedir()}/.ssh`, cleanable: true },
+                { path: `${os.homedir()}/.bash_history`, cleanable: true },
+                { path: `${os.homedir()}/.profile`, cleanable: false },
+                { path: `${os.homedir()}/.bashrc`, cleanable: false },
+                { path: `${os.homedir()}/.bash_logout`, cleanable: false },
+                { path: `${os.homedir()}/.bash_profile`, cleanable: false },
+                { path: `${os.homedir()}/.gitconfig`, cleanable: true },
+            ]
+        };
 
         // Create local settings directory if is not found
         if(!fs.existsSync(this.local))
@@ -43,7 +47,16 @@ class FoxEnv {
         .then(() => this.destructor())
 
         // Catch any error
-        .catch(e => console.log(`Error: ${e.message}`))
+        .catch(e => {
+            
+            // Expected error
+            if(e instanceof ExpectedError)
+                console.log(`Error: ${e.message}`)
+
+            // Unexpected error
+            else
+                throw e;
+        })
     }
 
     async destructor() {
@@ -92,6 +105,7 @@ class FoxEnv {
      * Show the main help message
      */
     async showHelp() {
+
         console.log([
             ``,
             `Manage environments for GIT and SSH.`,
@@ -123,7 +137,22 @@ class FoxEnv {
             `  ${os.homedir()}/.config/fox-env`,
             ``,
             `What files and directories does it save?`,
-            this.plan.map(item => `  - ${item.path}`).join(os.EOL),
+            this.settings.save.map(item => `  - ${item.path}`).join(os.EOL),
+            ``,
+            `Available environments:`,
+            (
+                await fsp.readdir(this.local, { withFileTypes: true })
+        
+                // Only directories
+                .then(items => items.filter(item => item.isDirectory()))
+
+                // Only folder name
+                .then(items => items.map(item => item.name))
+                .then(items => items.sort(Intl.Collator().compare))
+
+                // List log
+                .then(items => items.map(item => `  - ${item}`).join(os.EOL))
+            ),
             ``,
             `Current environment used:`,
             `  - Name: ${this.settings.currentEnv ? this.settings.currentEnv : ''}`,
@@ -138,7 +167,7 @@ class FoxEnv {
         console.log(`Creating a empty environment ...`);
 
         // Clear all folders / files
-        for(let item of this.plan) {
+        for(let item of this.settings.save) {
 
             if((!item.cleanable) || (!fs.existsSync(item.path)))
                 continue;
@@ -163,7 +192,7 @@ class FoxEnv {
 
         // Check current environment name is set
         if(!this.settings.currentEnv)
-            throw new Error(`Current environment is not found. Create or load one first.`);
+            throw new ExpectedError(`Current environment is not found. Create or load one first.`);
 
         // Show header progress
         console.log(`Saving current environment to ${local} ...`);
@@ -176,7 +205,7 @@ class FoxEnv {
         fs.mkdirSync(local, { recursive: true });
 
         // Copy all plan files
-        for(let item of this.plan) {
+        for(let item of this.settings.save) {
 
             // File or directory exists?
             if(!fs.existsSync(item.path)) {
@@ -200,20 +229,20 @@ class FoxEnv {
 
         // Name validation
         if(!name.match(/^[\w\-_\.\@]{1,128}$/))
-            throw new Error(`Invalid name format.`);
+            throw new ExpectedError(`Invalid name format.`);
 
         // Show header progress
         console.log(`Saving current environment to ${local} ...`);
         
         // Check directory is already exist
         if(fs.existsSync(local))
-            throw new Error(`Environment name is already exists. Delete it first.`);
+            throw new ExpectedError(`Environment name is already exists. Delete it first.`);
         
         // Create local store environment
         fs.mkdirSync(local, { recursive: true });
 
         // Copy all plan files
-        for(let item of this.plan) {
+        for(let item of this.settings.save) {
 
             // File or directory exists?
             if(!fs.existsSync(item.path)) {
@@ -240,17 +269,17 @@ class FoxEnv {
 
         // Name validation
         if(!name.match(/^[\w\-_\.\@]{1,128}$/))
-            throw new Error(`Invalid name format.`);
+            throw new ExpectedError(`Invalid name format.`);
 
         // Check directory is already exist
         if(!fs.existsSync(local))
-            throw new Error(`Environment name is not found.`);
+            throw new ExpectedError(`Environment name is not found.`);
 
         // Show header progress
         console.log(`Restoring environment from ${local} ...`);
 
         // Copy all plan files
-        for(let item of this.plan) {
+        for(let item of this.settings.save) {
 
             let from = `${local}/${path.basename(item.path)}`;
 
@@ -325,14 +354,14 @@ class FoxEnv {
 
         // Name validation
         if(!name.match(/^[\w\-_\.\@]{1,128}$/))
-            throw new Error(`Invalid name format.`);
+            throw new ExpectedError(`Invalid name format.`);
 
         // Show header progress
         console.log(`Deleting environment: ${local} ...`);
 
         // Check directory is already exist
         if(!fs.existsSync(local))
-            throw new Error(`Environment name is not found.`);
+            throw new ExpectedError(`Environment name is not found.`);
 
         // Delete all
         fs.rmSync(local, { recursive: true, force: true });
